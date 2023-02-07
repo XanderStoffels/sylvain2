@@ -1,5 +1,5 @@
-const f: any = defineEventHandler(async (e) => {
-    return "Cool stuff"
+export default defineEventHandler(async (e) => {
+    return {
+        "data": "Hello World!"
+    }
 });
-
-export default f;
