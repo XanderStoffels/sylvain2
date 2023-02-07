@@ -2,15 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: "Abadi MT Condensed Extra Light";
+    src: url("..\fonts\AbadiMTStd-ExtraLight.otf");
+}
+
 body {
-    @apply bg-gray-50;
+    @apply bg-white;
+    @apply font-abadi;
 }
 
 @layer components {
-    .btn {
-        @apply bg-[#12b488] text-white px-3 py-2 rounded-md text-sm text-white;
-    }
-    .card {
-        @apply p-3 rounded-md bg-white shadow-md h-full;
-    }
+  
 }

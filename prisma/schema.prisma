@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Reservation {
+  id              String    @id @default(cuid())
+  reservationCode String    @unique
+  state           Int
+  from            DateTime
+  to              DateTime
+  requestedAt     DateTime
+  bookedAt        DateTime?
+  canceledAt      DateTime?
+  note            String?
+  contactName     String
+  contactEmail    String
+  contactPhone    String
+  amountOfPeople  String
+  peopleInfo      String
+  price           Int
+  spots           Spot[]
+}
+
+model Spot {
+  id           String       @id @default(cuid())
+  from         DateTime
+  to           DateTime
+  price        Int
+  note         String?
+  isEnabled    Boolean      @default(true)
+  reservedById String
+  reservedBy   Reservation? @relation(fields: [reservedById], references: [id])
+}
