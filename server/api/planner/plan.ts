@@ -1,5 +1,5 @@
-import { PrismaClient, Spot } from '@prisma/client';
-const prisma = new PrismaClient();
+import { ReservationService } from "~~/server/services/reservations";
+const reservationService = new ReservationService();
 
 export default defineEventHandler(async event => {
     // Requires 'to' and 'from' to be set in the query.
@@ -24,7 +24,9 @@ export default defineEventHandler(async event => {
     const dateUntil = new Date(dateFrom);
     dateUntil.setMonth(dateFrom.getMonth() + 3);
 
-    // Get the user's calendar.
+    // Get unavailable dates.
+    await reservationService.getUnavailableDatesAsync(dateFrom, dateUntil);
+
 
 
     return {
@@ -34,75 +36,7 @@ export default defineEventHandler(async event => {
     }
 })
 
-async function buildSpotTreeAsync(startDate: Date, endDate: Date): Promise<TreeNode<Spot>[]> {
-    if (startDate > endDate) return [];
-
-    const pool = await readSpotsAsync(startDate, endDate);
-    if (pool.length === 0) return [];
-
-    const onSameDay = (d1: Date, d2: Date) =>
-        d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
-
-    const roots = pool
-        .filter(s => onSameDay(s.from, startDate))
-        .map(s => new TreeNode<Spot>(s))
-
-    if (roots.length === 0) return [];
-
-    const followUpSpots = (spot: Spot) => {
-        if (spot.to.getDay() != 0) return [];
-        const nextDay = new Date(spot.to.getDate() + 1);
-        return pool.filter(s => onSameDay(s.from, nextDay) && s.isEnabled && !s.reservedById);
-    }
-
-    const expandTree = (tree: TreeNode<Spot>) => {
-        const children = followUpSpots(tree.value);
-        children.forEach(c => {
-            tree.addChild(c);
-            expandTree(tree.children[tree.children.length - 1]);
-        });
-    }
 
 
 
-    return [];
-}
 
-async function readSpotsAsync(from: Date, to: Date): Promise<Spot[]> {
-    return await prisma.spot.findMany({
-        where: {
-            from: {
-                gte: from
-            },
-            to: {
-                lte: to
-            },
-            isEnabled: true,
-            reservedBy: null
-        }
-    });
-}
-
-class TreeNode<T> {
-    parent: TreeNode<T> | null;
-    children: TreeNode<T>[];
-    value: T;
-
-    constructor(value: T) {
-        this.value = value;
-        this.parent = null;
-        this.children = [];
-    }
-
-    addChild(child: T | TreeNode<T>) {
-        if (child instanceof TreeNode) {
-            child.parent = this;
-            this.children.push(child);
-        } else {
-            const newChild = new TreeNode(child);
-            newChild.parent = this;
-            this.children.push(newChild);
-        }
-    }
-
-}

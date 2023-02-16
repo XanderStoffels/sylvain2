@@ -36,6 +36,6 @@ model Spot {
   price        Int
   note         String?
   isEnabled    Boolean      @default(true)
-  reservedById String
+  reservedById String?
   reservedBy   Reservation? @relation(fields: [reservedById], references: [id])
 }

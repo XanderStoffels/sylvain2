@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 export default defineEventHandler(async (e) => {
 
     const unavailableDates: Date[] = [];
-    const data = await prisma.reservations.findMany({
+    const data = await prisma.reservation.findMany({
         select: {
             from: true,
             to: true,

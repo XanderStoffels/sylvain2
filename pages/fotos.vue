@@ -1,38 +1,46 @@
 <template>
-  <n-back-top :bottom="50" :visibility-height="300" :style="{
-    transition: 'all .3s cubic-bezier(.4, 0, .2, 1)'
-  }">
-    <div class="icon-container">
-      <n-icon size="40">
-        <ArrowUpOutline />
-      </n-icon>
-    </div>
-  </n-back-top>
-  <div>
-    <div v-show="photos.length === 0" class="flex justify-center pt-20">
-      <n-spin size="large" />
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center">
-      <n-image v-for="photo in photos" :key="photo" :src="photo" class="w-[350px] h-[350px] md:w-[400px] md:h-[400px]
-        object-cover rounded-sm justify-center bg-gray-200" object-fit="cover" />
-    </div>
+  <div v-show="!showModal">
+    <n-back-top :bottom="50" :visibility-height="300" :style="{
+      transition: 'all .3s cubic-bezier(.4, 0, .2, 1)'
+    }">
+      <div class="icon-container">
+        <n-icon size="40">
+          <ArrowUpOutline />
+        </n-icon>
+      </div>
+    </n-back-top>
   </div>
+
+  <div v-show="showModal" @click="showModal = false"
+    class="fixed top-0 left-0 z-80 w-screen h-screen bg-black/70 flex justify-center items-center">
+    <a @click="showModal = false"
+      class="cursor-pointer fixed z-90 top-6 right-8 text-white text-5xl font-bold">&times;</a>
+    <img :src="selectedPhoto" class="object-contain max-w-[800px] max-h-[600px]" />
+  </div>
+  <div class="container">
+    <div class="flex flex-wrap">
+      <div v-for="photo, index in photos" :key="photo" class="aspect-square py-1 md:p-2 w-1/1 md:w-1/2 xl:w-1/3 ">
+        <img class="block h-full w-full object-cover" :src="photo" @click="photoClick(index)" />
+        <!-- <n-image :src="photo" class="block h-full w-full" /> -->
+      </div>
+    </div>
+</div>
 </template>
 
 <script setup lang="ts">
-import { NSpin, NImage, NBackTop, NIcon } from 'naive-ui';
+import { NBackTop, NIcon } from 'naive-ui';
 import { ArrowUpOutline } from '@vicons/ionicons5';
 
-const imports = import.meta.glob('@/assets/img/gallery/*');
-const photos = ref<string[]>([]);
+const { photos } = useGalleryImages();
 
-onMounted(async () => {
-  // Import photos dynamically.
-  const tasks = Object.keys(imports).map(path => imports[path]());
-  const importedPhotos = await Promise.all(tasks);
-  importedPhotos.forEach(m => photos.value.push(m.default));
-});
+const showModal = ref(false);
+const photoIndex = ref(0);
+const selectedPhoto = ref<string>(photos.value[photoIndex.value]);
 
+function photoClick(photoIndex: number) {
+  selectedPhoto.value = photos.value[photoIndex];
+  showModal.value = true;
+}
 
 </script>
 
